@@ -14,6 +14,7 @@ them to generate the text
 
 I personally populate "text_data.txt" with http://norvig.com/big.txt
 
+Also try to use https://gist.github.com/yanofsky/5436496
 """
 
 import sys
