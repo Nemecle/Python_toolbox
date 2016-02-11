@@ -19,6 +19,7 @@ I personally populate "text_data.txt" with http://norvig.com/big.txt
 import sys
 import random
 
+
 FILENAME = "nemecle_tweets.csv"
 
 
