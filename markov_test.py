@@ -19,6 +19,8 @@ I personally populate "text_data.txt" with http://norvig.com/big.txt
 import sys
 import random
 
+FILENAME = "nemecle_tweets.csv"
+
 
 def dict_search(dictionnary, word):
     """
@@ -66,7 +68,7 @@ def main():
 
 
     try:
-        with open('text_data.txt', 'r') as data:
+        with open(FILENAME, 'r') as data:
             text = data.read()
     except Exception as exp:
         print("(main) Error while reading file: " + str(exp))
@@ -123,7 +125,7 @@ def main():
             endstring += " " + value
 
             ite += 1
-            print("is at " + str(ite) + " iteration")
+            # print("is at " + str(ite) + " iteration")
 
     print("finished after " + str(ite) + " iteration")
     print("result is: ")
