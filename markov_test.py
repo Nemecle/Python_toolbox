@@ -42,35 +42,17 @@ def dict_search(dictionnary, word):
 
     return returnlist
 
-def main():
+def get_rand_string(length, datafile, nbrkey=2, nbrvalue=1):
     """
-    main function of the program
+    return a generated string if given length (in word) and
+    based on given file
 
     """
 
     # variable initialization
-    length = 100
-
-    if len(sys.argv) < 3:
-        print("please call the script with two numbers as argument.")
-        sys.exit(2)
 
     try:
-        nbrkey = int(sys.argv[1])
-        nbrvalue = int(sys.argv[2])
-    except Exception:
-        print("please call the script with two numbers as argument.")
-        sys.exit(2)
-
-    try:
-        #3rd argument is optional
-        length = int(sys.argv[3])
-    except Exception:
-        pass
-
-
-    try:
-        with open(FILENAME, 'r') as data:
+        with open(datafile, 'r') as data:
             text = data.read()
     except Exception as exp:
         print("(main) Error while reading file: " + str(exp))
@@ -80,7 +62,7 @@ def main():
     isoutofdata = False
     ite = 0
 
-    print("striping unwanted characters")
+    # print("striping unwanted characters")
     for char in ["\"", ")", "(", "]", "[", "="]:
         text = text.replace(char, '')
     text = text.split()
@@ -88,7 +70,7 @@ def main():
 
 
     # feeding data
-    print("creating tuples")
+    # print("creating tuples")
     for nbr in range(0, numberofword - nbrkey - nbrvalue):
         keywords = []
         valuewords = []
@@ -111,11 +93,11 @@ def main():
         # print(str(nbr) + " tuples created")
 
 
-    print("starting with seed")
+    # print("starting with seed")
     seed, _ = random.choice(wordtuples)
     endstring += seed
 
-    print("starting adding samples")
+    # print("starting adding samples")
     while not isoutofdata and ite < length:
         lastword = " ".join(endstring.split()[-nbrkey:])
         possibilities = dict_search(wordtuples, lastword)
@@ -129,11 +111,42 @@ def main():
             ite += 1
             # print("is at " + str(ite) + " iteration")
 
-    print("finished after " + str(ite) + " iteration")
-    print("result is: ")
-    print(endstring)
+    # print("finished after " + str(ite) + " iteration")
+    # print("result is: ")
+
+    return endstring
 
     sys.exit(0)
 
+
+def main():
+    """
+    main loop of the program.
+
+    """
+
+    length = 100
+    if len(sys.argv) < 3:
+        print("please call the script with two numbers as argument.")
+        sys.exit(2)
+
+    try:
+        nbrkey = int(sys.argv[1])
+        nbrvalue = int(sys.argv[2])
+    except Exception:
+        print("please call the script with two numbers as argument.")
+        sys.exit(2)
+
+    try:
+        #3rd argument is optional
+        length = int(sys.argv[3])
+    except Exception:
+        pass
+
+
+
+    get_rand_string(FILENAME, length, sys.argv[1], sys.argv[2])
+
+    return
 if __name__ == '__main__':
     main()
