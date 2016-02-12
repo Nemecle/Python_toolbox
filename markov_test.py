@@ -19,6 +19,8 @@ Also try to use https://gist.github.com/yanofsky/5436496
 
 import sys
 import random
+import re
+from timeoutdec import timeout
 
 
 FILENAME = "nemecle_tweets.csv"
@@ -32,17 +34,21 @@ def dict_search(dictionnary, word):
 
     returnlist = []
 
+    lword = str.lower(word)
+
     try:
         for (key, value) in dictionnary:
-            if word.endswith(key):
+            if bool(re.match(word, key, re.I)):
                 returnlist.append((key, value))
 
     except Exception as exp:
-        print "(search) Error while working with dictionary: " + str(exp)
+        # print "(search) Error while working with dictionary: " + str(exp)\
+        # + " \nlw: " + lword + " \nword: " + word + " \nkey: " + key
+        return -1
 
     return returnlist
 
-def get_rand_string(length, datafile, nbrkey=2, nbrvalue=1):
+def get_rand_string(datafile, length, nbrkey=2, nbrvalue=1, seed=""):
     """
     return a generated string if given length (in word) and
     based on given file
@@ -56,6 +62,7 @@ def get_rand_string(length, datafile, nbrkey=2, nbrvalue=1):
             text = data.read()
     except Exception as exp:
         print("(main) Error while reading file: " + str(exp))
+        return sys.exit(2)
 
     endstring = ""
     wordtuples = []
@@ -63,8 +70,8 @@ def get_rand_string(length, datafile, nbrkey=2, nbrvalue=1):
     ite = 0
 
     # print("striping unwanted characters")
-    for char in ["\"", ")", "(", "]", "[", "="]:
-        text = text.replace(char, '')
+    for char in ["\"", ")", "(", "]", "[", "=", "\n"]:
+        text = text.replace(char, ' ')
     text = text.split()
     numberofword = len(text)
 
@@ -94,15 +101,19 @@ def get_rand_string(length, datafile, nbrkey=2, nbrvalue=1):
 
 
     # print("starting with seed")
-    seed, _ = random.choice(wordtuples)
+    if seed is "":
+        seed, _ = random.choice(wordtuples)
+
     endstring += seed
 
     # print("starting adding samples")
     while not isoutofdata and ite < length:
         lastword = " ".join(endstring.split()[-nbrkey:])
         possibilities = dict_search(wordtuples, lastword)
-        if len(possibilities) is 0:
-            isoutofdata = False
+        if possibilities is -1:
+            isoutofdata = True
+        elif len(possibilities) is 0:
+            isoutofdata = True
         else:
             (key, value) = random.choice(possibilities)
 
@@ -118,6 +129,44 @@ def get_rand_string(length, datafile, nbrkey=2, nbrvalue=1):
 
     sys.exit(0)
 
+@timeout(5)
+def get_rand_tweet(datafile, length=100, nbrkey=3, nbrvalue=1, seed=""):
+
+    conti = True
+    res = []
+
+    while conti:
+        text = get_rand_string(datafile, length, nbrkey, nbrvalue, seed)
+        if len(text) is not 0:
+            text = re.sub(r"(http|https):\/\/[^ ^\n]* ", "", text)
+            text = re.sub(r"@", "", text)
+            text = re.split(r"[\.\?\!]", text)
+
+            for sentence in text:
+                if len(sentence) > 40 and len(sentence) < 140:
+                    conti = False
+                    return sentence
+
+@timeout(5)
+def get_rand_reply(datafile, length=100, nbrkey=3, nbrvalue=1, seed=""):
+
+    conti = True
+    res = []
+
+    while conti:
+        text = get_rand_string(datafile, length, nbrkey, nbrvalue, seed)
+        if len(text) is not 0:
+            text = re.sub(r"(http|https):\/\/[^ ^\n]* ", "", text)
+            text = re.sub(r"@", "", text)
+            text = re.split(r"[\.\?\!]", text)
+
+            for sentence in text:
+                if len(sentence) > 40 and len(sentence) < 100:
+                    conti = False
+                    return sentence
+
+
+    return -1
 
 def main():
     """
@@ -127,25 +176,28 @@ def main():
 
     length = 100
     if len(sys.argv) < 3:
-        print("please call the script with two numbers as argument.")
+        print("please call the script with one file and two numbers "\
+            "as argument.")
         sys.exit(2)
 
     try:
-        nbrkey = int(sys.argv[1])
-        nbrvalue = int(sys.argv[2])
+        filename = sys.argv[1]
+        nbrkey = int(sys.argv[2])
+        nbrvalue = int(sys.argv[3])
     except Exception:
-        print("please call the script with two numbers as argument.")
+        print("please call the script with one file and two numbers "\
+            "as argument.")
         sys.exit(2)
 
     try:
         #3rd argument is optional
-        length = int(sys.argv[3])
+        length = int(sys.argv[4])
     except Exception:
         pass
 
 
 
-    get_rand_string(FILENAME, length, sys.argv[1], sys.argv[2])
+    print get_rand_string(filename, length, nbrkey, nbrvalue)
 
     return
 if __name__ == '__main__':

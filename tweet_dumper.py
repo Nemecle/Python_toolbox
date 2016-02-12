@@ -38,7 +38,7 @@ def get_all_tweets(screen_name):
 
 
     while len(lasttweets) > 0:
-        print "getting tweets before %s" % (oldest)
+        # print "getting tweets before %s" % (oldest)
 
 
         lasttweets = api.user_timeline(screen_name=screen_name, \
@@ -48,10 +48,9 @@ def get_all_tweets(screen_name):
 
         oldest = alltweets[-1].id - 1
 
-        print "...%s tweets downloaded so far" % (len(alltweets))
+        # print "...%s tweets downloaded so far" % (len(alltweets))
 
     #transform the tweepy tweets into a 2D array that will populate the csv
-    outtweets = [[tweet.id_str, tweet.created_at,\
-    tweet.text.encode("utf-8")] for tweet in alltweets]
+    outtweets = [tweet.text.encode("utf-8") for tweet in alltweets]
 
     return outtweets
