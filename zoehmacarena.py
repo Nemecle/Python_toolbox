@@ -6,11 +6,13 @@ file used for small tests. don't mind it
 """
 
 import tweepy
+import random
 from time import sleep
 from tweepy import OAuthHandler
 
 import markov_test as mt
 import tweet_dumper
+from timeoutdec import timeout, TimeoutError
 
 def getstatus():
     """
@@ -88,31 +90,52 @@ def main():
 
     try:
         lastf = open("last.db", "r")
-        lastanswered = lastf.readline()
+        lastanswered = int(lastf.readline())
         lastf.close()
     except:
         lastanswered = ""
 
 
-    if lastanswered is not "":
-        mentions = api.mentions_timeline(since_id=lastanswered)
+    # if lastanswered is not "":
+    #     mentions = api.mentions_timeline(since_id=lastanswered)
 
-    else:
-        mentions = api.mentions_timeline()
+    # else:
+    #     mentions = api.mentions_timeline()
 
+
+
+    mentions = api.mentions_timeline()
 
     for mention in reversed(mentions):
-        print mention.id
+        print str(mention.id)
         print mention.user.screen_name
-        print mention.text
-        try:
-            lastf = open("last.db", "w")
-            lastf.write(str(mention.id))
-            lastf.close()
-        except:
-            print "Error while writing last id"
+        print mention.text + "\n\n"
 
-        print("\n")
+    for mention in reversed(mentions):
+        # print mention.id
+        # print mention.user.screen_name
+        # print mention.text
+
+        if str(mention.id) is "698147667990441984":
+            print "found"
+            try:
+
+                answer = mt.get_rand_reply("zoepetitchat_tweets.csv", length=400)
+
+                print answer
+
+                api.update_status("@" + mention.user.screen_name + answer,\
+                                  mention.id)
+
+
+
+                lastf = open("last.db", "w")
+                lastf.write(str(mention.id))
+                lastf.close()
+            except Exception as exp:
+                print "Error while answering: " + str(exp)
+
+            print("\n")
 
     return
 

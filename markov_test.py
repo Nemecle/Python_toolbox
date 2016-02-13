@@ -20,7 +20,7 @@ Also try to use https://gist.github.com/yanofsky/5436496
 import sys
 import random
 import re
-from timeoutdec import timeout
+from timeoutdec import timeout, TimeoutError
 
 
 FILENAME = "nemecle_tweets.csv"
@@ -161,7 +161,7 @@ def get_rand_reply(datafile, length=100, nbrkey=3, nbrvalue=1, seed=""):
             text = re.split(r"[\.\?\!]", text)
 
             for sentence in text:
-                if len(sentence) > 40 and len(sentence) < 100:
+                if len(sentence) > 40 and len(sentence) < 60:
                     conti = False
                     return sentence
 
