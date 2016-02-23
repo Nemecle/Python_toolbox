@@ -6,13 +6,10 @@ file used for small tests. don't mind it
 """
 
 import tweepy
-import random
 from time import sleep
 from tweepy import OAuthHandler
 
 import markov_test as mt
-import tweet_dumper
-from timeoutdec import timeout, TimeoutError
 
 def getstatus():
     """
@@ -30,28 +27,32 @@ def getstatus():
     return status
 
 def bot_invasion():
+    """
+    bot that tweets
+
+    """
 
     #authorize twitter, initialize tweepy
-    fo = open("Zoehmacarena.tokens", "r")
+    token = open("Zoehmacarena.tokens", "r")
 
-    consumer_key = fo.readline()[:-1]
-    consumer_secret = fo.readline()[:-1]
-    access_token = fo.readline()[:-1]
-    access_secret = fo.readline()[:-1]
+    consumer_key = token.readline()[:-1]
+    consumer_secret = token.readline()[:-1]
+    access_token = token.readline()[:-1]
+    access_secret = token.readline()[:-1]
 
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_secret)
 
     api = tweepy.API(auth)
 
-    for x in range(1000):
+    for nbr in range(1000):
         status = getstatus()
         api.update_status(status)
         print "I tweeted \"" + status + "\""
         sleep(62)
 
 
-    pass
+    return
 
 def random_tweet():
     """
@@ -74,11 +75,11 @@ def main():
 
     """
 
-    fo = open("Zoehmacarena.tokens", "r")
-    consumer_key = fo.readline()[:-1]
-    consumer_secret = fo.readline()[:-1]
-    access_token = fo.readline()[:-1]
-    access_secret = fo.readline()[:-1]
+    token = open("Zoehmacarena.tokens", "r")
+    consumer_key = token.readline()[:-1]
+    consumer_secret = token.readline()[:-1]
+    access_token = token.readline()[:-1]
+    access_secret = token.readline()[:-1]
 
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_secret)

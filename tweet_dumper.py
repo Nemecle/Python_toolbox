@@ -5,9 +5,8 @@ based on https://gist.github.com/yanofsky/5436496
 
 """
 
-import tweepy #https://github.com/tweepy/tweepy
-import csv
 import tweepy
+import csv
 
 
 def get_all_tweets(screen_name):
