@@ -12,7 +12,7 @@ import Tkinter as Tk
 
 class Interface(Tk.Frame):
     """
-    definition of the main window interface (self explainatory huh?)
+    create the main window interface (self explainatory huh?)
 
     """
 
@@ -21,8 +21,17 @@ class Interface(Tk.Frame):
         self.root = window
         self.pack(fill=Tk.BOTH)
 
+        return
+
+    def start(self):
+        """
+        show the window and launch its main loop
+
+        """
 
         self.root.mainloop()
+        return
+
 
 
 def main():
@@ -33,6 +42,8 @@ def main():
 
     window = Tk.Tk()
     app = Interface(window)
+    app.start()
+
     pass
 
 
