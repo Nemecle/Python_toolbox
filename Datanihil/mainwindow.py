@@ -15,11 +15,32 @@ class Interface(Tk.Frame):
     create the main window interface (self explainatory huh?)
 
     """
+    def cleanlist(self):
+        self.proclist.delete(0, Tk.END) # clear
 
     def __init__(self, window):
-        Tk.Frame.__init__(self, window, width=600, height=400)
+
+        Tk.Frame.__init__(self, window)
         self.root = window
-        self.pack(fill=Tk.BOTH)
+
+        self.search = Tk.Entry(self.root)
+        self.search.grid(column=0, row=0, columnspan=2)
+
+        self.proclist = Tk.Listbox(self.root)
+        self.proclist.grid(column=0, row=1, columnspan=2, rowspan=6)
+
+        self.currentproc = Tk.Label(self.root, text="This is a test, but "\
+            "a very nice one", anchor=Tk.E)
+        self.currentproc.grid(column=3, row=0, columnspan=4, rowspan=8)
+
+
+        for item in ["one", "two", "three", "four"]:
+            self.proclist.insert(Tk.END, item)
+
+
+        #test
+        self.button = Tk.Button(self.root, text="clean", command=self.cleanlist)
+        self.button.grid(column=7, row=0)
 
         return
 
