@@ -25,148 +25,159 @@ from timeoutdec import timeout, TimeoutError
 
 FILENAME = "nemecle_tweets.csv"
 
+class Markov_instance(object):
+    def dict_search(self, word):
+        """
+        search for multiple tuples and return them as a list
+    
+        """
+    
+        returnlist = []
+    
+        lword = str.lower(word)
+    
+        try:
+            for (key, value) in self.wordtuples:
+                if bool(re.match(word, key, re.I)):
+                    returnlist.append((key, value))
+    
+        except Exception as exp:
+            # print "(search) Error while working with dictionary: " + str(exp)\
+            # + " \nlw: " + lword + " \nword: " + word + " \nkey: " + key
+            return -1
+    
+        return returnlist
 
-def dict_search(dictionnary, word):
-    """
-    search for multiple tuples and return them as a list
+    def get_rand_string(self, seed="", length=100):
+        """
+        return a generated string if given length (in word) and
+        based on given file
+    
+        """
 
-    """
+        endstring = ""
+        isoutofdata = False
+        ite = 0
+        # print("starting with seed")
+        if seed is "":
+            seed, _ = random.choice(self.wordtuples)
+    
+        endstring += seed
+    
+        # print("starting adding samples")
+        while not isoutofdata and ite < length:
+            lastword = " ".join(endstring.split()[-self.nbrkey:])
+            possibilities = self.dict_search(lastword)
+            if possibilities is -1:
+                isoutofdata = True
+            elif len(possibilities) is 0:
+                isoutofdata = True
+            else:
+                (key, value) = random.choice(possibilities)
+    
+                endstring += " " + value
+    
+                ite += 1
+                # print("is at " + str(ite) + " iteration")
+    
+        # print("finished after " + str(ite) + " iteration")
+        # print("result is: ")
+    
+        return endstring
 
-    returnlist = []
+    @timeout(5)
+    def get_rand_tweet(self, datafile, length=100, nbrkey=3, nbrvalue=1, seed=""):
+    
+        conti = True
+        res = []
+    
+        while conti:
+            text = get_rand_string(length, seed)
+            if len(text) is not 0:
+                text = re.sub(r"(http|https):\/\/[^ ^\n]* ", "", text)
+                text = re.sub(r"@", "", text)
+                text = re.split(r"[\.\?\!]", text)
+    
+                for sentence in text:
+                    if len(sentence) > 40 and len(sentence) < 140:
+                        conti = False
+                        return sentence
 
-    lword = str.lower(word)
-
-    try:
-        for (key, value) in dictionnary:
-            if bool(re.match(word, key, re.I)):
-                returnlist.append((key, value))
-
-    except Exception as exp:
-        # print "(search) Error while working with dictionary: " + str(exp)\
-        # + " \nlw: " + lword + " \nword: " + word + " \nkey: " + key
+    @timeout(5)
+    def get_rand_reply(self, length=100, seed=""):
+    
+        conti = True
+        res = []
+    
+        while conti:
+            text = get_rand_string(length, seed)
+            if len(text) is not 0:
+                text = re.sub(r"(http|https):\/\/[^ ^\n]* ", "", text)
+                text = re.sub(r"@", "", text)
+                text = re.split(r"[\.\?\!]", text)
+    
+                for sentence in text:
+                    if len(sentence) > 40 and len(sentence) < 60:
+                        conti = False
+                        return sentence
+    
+    
         return -1
 
-    return returnlist
 
-def get_rand_string(datafile, length, nbrkey=2, nbrvalue=1, seed=""):
-    """
-    return a generated string if given length (in word) and
-    based on given file
+    def __init__(self, filename, nbrkey, nbrvalue):
+        
+        self.filename = filename
+        self.nbrkey = nbrkey
+        self.nbrvalue = nbrvalue
 
-    """
+        self.wordtuples = []
 
-    # variable initialization
+        
+        try:
+            with open(filename, 'r') as data:
+                text = data.read()
+        except Exception as exp:
+            print("(main) Error while reading file: " + str(exp))
+            return sys.exit(2)
+    
+        endstring = ""
+        isoutofdata = False
+        ite = 0
+    
+        # print("striping unwanted characters")
+        for char in ["\"", ")", "(", "]", "[", "=", "\n"]:
+            text = text.replace(char, ' ')
+        text = text.split()
+        self.numberofword = len(text)
+    
+    
+        # feeding data
+        # print("creating tuples")
+        for nbr in range(0, self.numberofword - self.nbrkey - self.nbrvalue):
+            keywords = []
+            valuewords = []
+            for key in range(nbr, nbr + self.nbrkey):
+                keywords.append(text[key])
+            for key in range(nbr + self.nbrkey, nbr + self.nbrkey + self.nbrvalue):
+                valuewords.append(text[key])
+    
+    
+            keywords = ''.join(str(e) + " " for e in keywords)
+            keywords = " ".join(keywords.split())
+    
+            valuewords = ''.join(str(e) + " " for e in valuewords)
+            valuewords = " ".join(valuewords.split())
+    
+            # print "\"" + keywords + "\" \"" + valuewords + "\""
+    
+            self.wordtuples.append((keywords, valuewords))
+    
+            # print(str(nbr) + " tuples created")
 
-    try:
-        with open(datafile, 'r') as data:
-            text = data.read()
-    except Exception as exp:
-        print("(main) Error while reading file: " + str(exp))
-        return sys.exit(2)
-
-    endstring = ""
-    wordtuples = []
-    isoutofdata = False
-    ite = 0
-
-    # print("striping unwanted characters")
-    for char in ["\"", ")", "(", "]", "[", "=", "\n"]:
-        text = text.replace(char, ' ')
-    text = text.split()
-    numberofword = len(text)
-
-
-    # feeding data
-    # print("creating tuples")
-    for nbr in range(0, numberofword - nbrkey - nbrvalue):
-        keywords = []
-        valuewords = []
-        for key in range(nbr, nbr + nbrkey):
-            keywords.append(text[key])
-        for key in range(nbr + nbrkey, nbr + nbrkey + nbrvalue):
-            valuewords.append(text[key])
-
-
-        keywords = ''.join(str(e) + " " for e in keywords)
-        keywords = " ".join(keywords.split())
-
-        valuewords = ''.join(str(e) + " " for e in valuewords)
-        valuewords = " ".join(valuewords.split())
-
-        # print "\"" + keywords + "\" \"" + valuewords + "\""
-
-        wordtuples.append((keywords, valuewords))
-
-        # print(str(nbr) + " tuples created")
-
-
-    # print("starting with seed")
-    if seed is "":
-        seed, _ = random.choice(wordtuples)
-
-    endstring += seed
-
-    # print("starting adding samples")
-    while not isoutofdata and ite < length:
-        lastword = " ".join(endstring.split()[-nbrkey:])
-        possibilities = dict_search(wordtuples, lastword)
-        if possibilities is -1:
-            isoutofdata = True
-        elif len(possibilities) is 0:
-            isoutofdata = True
-        else:
-            (key, value) = random.choice(possibilities)
-
-            endstring += " " + value
-
-            ite += 1
-            # print("is at " + str(ite) + " iteration")
-
-    # print("finished after " + str(ite) + " iteration")
-    # print("result is: ")
-
-    return endstring
-
-    sys.exit(0)
-
-@timeout(5)
-def get_rand_tweet(datafile, length=100, nbrkey=3, nbrvalue=1, seed=""):
-
-    conti = True
-    res = []
-
-    while conti:
-        text = get_rand_string(datafile, length, nbrkey, nbrvalue, seed)
-        if len(text) is not 0:
-            text = re.sub(r"(http|https):\/\/[^ ^\n]* ", "", text)
-            text = re.sub(r"@", "", text)
-            text = re.split(r"[\.\?\!]", text)
-
-            for sentence in text:
-                if len(sentence) > 40 and len(sentence) < 140:
-                    conti = False
-                    return sentence
-
-@timeout(5)
-def get_rand_reply(datafile, length=100, nbrkey=3, nbrvalue=1, seed=""):
-
-    conti = True
-    res = []
-
-    while conti:
-        text = get_rand_string(datafile, length, nbrkey, nbrvalue, seed)
-        if len(text) is not 0:
-            text = re.sub(r"(http|https):\/\/[^ ^\n]* ", "", text)
-            text = re.sub(r"@", "", text)
-            text = re.split(r"[\.\?\!]", text)
-
-            for sentence in text:
-                if len(sentence) > 40 and len(sentence) < 60:
-                    conti = False
-                    return sentence
+        return
 
 
-    return -1
 
 def main():
     """
@@ -195,10 +206,12 @@ def main():
     except Exception:
         pass
 
+    bot =Markov_instance(filename, nbrkey, nbrvalue)
 
-
-    print get_rand_string(filename, length, nbrkey, nbrvalue)
+    print bot.get_rand_string()
 
     return
+
+
 if __name__ == '__main__':
     main()
