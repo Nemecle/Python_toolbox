@@ -209,6 +209,10 @@ def main():
     bot =Markov_instance(filename, nbrkey, nbrvalue)
 
     print bot.get_rand_string()
+    print bot.get_rand_string()
+    print bot.get_rand_string()
+    print bot.get_rand_string()
+    print bot.get_rand_string()
 
     return
 
