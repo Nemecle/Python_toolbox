@@ -65,7 +65,7 @@ class Markov_instance(object):
         endstring += seed
     
         # print("starting adding samples")
-        while not isoutofdata and ite < length:
+        while not isoutofdata and ite < self.length:
             lastword = " ".join(endstring.split()[-self.nbrkey:])
             possibilities = self.dict_search(lastword)
             if possibilities is -1:
@@ -78,11 +78,13 @@ class Markov_instance(object):
                 endstring += " " + value
     
                 ite += 1
-                # print("is at " + str(ite) + " iteration")
-    
-        # print("finished after " + str(ite) + " iteration")
-        # print("result is: ")
-    
+            
+        for char in [" . " ," , ", " ... "]:
+            endstring = endstring.replace(char, char.replace(" ", "") + " ") 
+        for char in [" : ", " ; ", " ? ", " ! "]:
+            endstring = endstring.replace(char, " " + char.replace(" ", "") + " ") 
+        
+        
         return endstring
 
     @timeout(5)
@@ -125,11 +127,12 @@ class Markov_instance(object):
         return -1
 
 
-    def __init__(self, filename, nbrkey, nbrvalue):
+    def __init__(self, filename, nbrkey, nbrvalue, length):
         
         self.filename = filename
         self.nbrkey = nbrkey
         self.nbrvalue = nbrvalue
+        self.length = length
 
         self.wordtuples = []
 
@@ -147,7 +150,13 @@ class Markov_instance(object):
     
         # print("striping unwanted characters")
         for char in ["\"", ")", "(", "]", "[", "=", "\n"]:
-            text = text.replace(char, ' ')
+            text = text.replace(char, "")
+
+
+        # to process punctation right
+        for char in [". ",", ", " : ", " ; ", "... ", " ! ", " ? "]:
+            text = text.replace(char, " " + char)
+
         text = text.split()
         self.numberofword = len(text)
     
@@ -206,7 +215,7 @@ def main():
     except Exception:
         pass
 
-    bot =Markov_instance(filename, nbrkey, nbrvalue)
+    bot =Markov_instance(filename, nbrkey, nbrvalue, length)
 
     print bot.get_rand_string()
     print bot.get_rand_string()
